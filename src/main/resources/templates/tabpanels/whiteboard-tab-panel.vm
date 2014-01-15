@@ -1,0 +1,3 @@
+<div class="mod-header">
+    <h3>$i18n.getText('Whiteboard')</h3>
+</div>
