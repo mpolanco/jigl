@@ -15,7 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.CustomFieldManager;
+import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.tabpanels.*;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
@@ -38,9 +41,13 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 
 	public List getActions(Issue issue, User remoteUser) {
 		List<IssueAction> messages = new ArrayList<IssueAction>();
-
+		
 		try {
-			Process p = Runtime.getRuntime().exec("ssh -p 29418 mpolanco@review.openstack.org gerrit query --format=json --current-patch-set --comments change:I741b3a39e1ec24ee81d441788be72f7272");
+			CustomField gerritLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
+			String gitID = issue.getCustomFieldValue(gerritLinkField).toString();
+			System.err.println("GID" + gitID);
+			
+			Process p = Runtime.getRuntime().exec("ssh -p 29418 mpolanco@review.openstack.org gerrit query --format=json --current-patch-set --comments change:" + gitID); //I741b3a39e1ec24ee81d441788be72f7272");
 		    p.waitFor();
 		    
 		    System.err.println("waiting");
@@ -144,13 +151,13 @@ class GerritCommentAction implements IssueAction {
 	    "<div class='twixi-wrap verbose actionContainer'>" + 
 	    "    <div class='action-head'>" +  
 	    "        <div class='action-details'>" + 
-	    "			<a class='user-hover user-avatar' rel='" + reviewer + "(" + username + ")' id='commentauthor_10000_verbose' href=#>" +
+	    "			<a class='user-hover user-avatar' rel='" + username + "' href=#>" +
 	    "			<span class='aui-avatar aui-avatar-xsmall'>" +
 	    "			<span class='aui-avatar-inner'>" +
 	    "			<img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'>" +
 	    "			</span>" +
 	    "			</span> " +
-	    "			" + reviewer + "(" + username + ")" +
+	    "			" + reviewer + " (" + username + ")" +
 	    "			</a>" +
 	    "		added a comment  - " +
 	    "		<span class='commentdate_10000_verbose subText'>" +

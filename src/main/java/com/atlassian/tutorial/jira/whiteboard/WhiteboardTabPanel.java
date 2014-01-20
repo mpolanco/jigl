@@ -1,5 +1,6 @@
 package com.atlassian.tutorial.jira.whiteboard;
 
+import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -11,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel;
@@ -27,6 +30,9 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 		List<GenericMessageAction> messages = new ArrayList<GenericMessageAction>();
 
 		try {
+			CustomField bpLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Launchpad Blueprint Link");
+			
+			String bpLink = issue.getCustomFieldValue(bpLinkField).toString();
 
 			String url = "http://api.launchpad.net/devel/trove/+spec/replication";
 
