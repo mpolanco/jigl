@@ -25,6 +25,10 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	private static final Logger log = LoggerFactory
 			.getLogger(WhiteboardTabPanel.class);
+	
+	private final String BASE_LAUNCHPAD_API_URL = "https://api.launchpad.net/";
+	private final String API_VERSION = "devel";
+	private final String BASE_LAUNCHPAD_BLUEPRINT_HOST = "blueprints.launchpad.net";
 
 	public List getActions(Issue issue, User remoteUser) {
 		List<GenericMessageAction> messages = new ArrayList<GenericMessageAction>();
@@ -33,8 +37,10 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 			CustomField bpLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Launchpad Blueprint Link");
 			
 			String bpLink = issue.getCustomFieldValue(bpLinkField).toString();
+			
+			String url = BASE_LAUNCHPAD_API_URL + API_VERSION + bpLink.substring((bpLink.lastIndexOf(BASE_LAUNCHPAD_BLUEPRINT_HOST) + BASE_LAUNCHPAD_BLUEPRINT_HOST.length()));
 
-			String url = "http://api.launchpad.net/devel/trove/+spec/replication";
+			//String url = "http://api.launchpad.net/devel/trove/+spec/replication";
 
 			URL obj = new URL(url);
 			HttpURLConnection conn = (HttpURLConnection) obj.openConnection();

@@ -28,7 +28,6 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.util.json.JSONTokener;
-import com.google.gson.JsonArray;
 
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
@@ -79,7 +78,7 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 			System.err.println(e);
 		}
 
-
+		
 		return messages;
 	}
 	
