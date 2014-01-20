@@ -25,29 +25,6 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 
 	public List getActions(Issue issue, User remoteUser) {
 		List<GenericMessageAction> messages = new ArrayList<GenericMessageAction>();
-		messages.add(new GenericMessageAction("test1"));
-		messages.add(new GenericMessageAction("test2"));
-
-		/*try {
-			// URL yahoo = new
-			// URL("https://blueprints.launchpad.net/trove/+spec/trove-metadata");
-			URL launchpad = new URL(
-					"http://api.launchpad.net/devel/trove/+spec/replication");
-			HttpURLConnection.setFollowRedirects(true);
-			HttpURLConnection wbc = (HttpURLConnection) launchpad
-					.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					wbc.getInputStream()));
-			String inputLine;
-
-			while ((inputLine = in.readLine()) != null) {
-				System.err.println(inputLine);
-				messages.add(new GenericMessageAction(inputLine));
-			}
-			in.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-		}*/
 
 		try {
 
