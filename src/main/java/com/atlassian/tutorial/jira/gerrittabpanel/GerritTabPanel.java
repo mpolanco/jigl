@@ -10,22 +10,24 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.omg.CORBA.REBIND;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.datetime.DateTimeFormatter;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.CustomFieldManager;
+import com.atlassian.jira.issue.RendererManager;
+import com.atlassian.jira.issue.comments.CommentImpl;
+import com.atlassian.jira.issue.comments.CommentManager;
 import com.atlassian.jira.issue.fields.CustomField;
-import com.atlassian.jira.issue.tabpanels.*;
+import com.atlassian.jira.issue.fields.layout.field.FieldLayoutManager;
+import com.atlassian.jira.issue.tabpanels.CommentAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import com.atlassian.jira.plugin.*;
 import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.util.json.JSONTokener;
 
@@ -37,7 +39,13 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 	private static final String USER = "mpolanco";
 	private static final int PORT = 29418;
 	private static final String COMMENTS = "comments";
+	private DateTimeFormatter dateTimeFormatter;
 
+	public GerritTabPanel(DateTimeFormatter dateTimeFormatter)
+	{
+		this.dateTimeFormatter = dateTimeFormatter.forLoggedInUser();
+	}
+	
 	public List getActions(Issue issue, User remoteUser) {
 		List<IssueAction> messages = new ArrayList<IssueAction>();
 		
@@ -65,7 +73,7 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		    	for (int k = 0; k < comments.length(); k++)
 		    	{
 		    		JSONObject commentJSON = comments.getJSONObject(k);
-		    		GerritCommentAction commentText = formatComment(commentJSON);
+		    		GerritCommentAction commentText = formatComment(commentJSON, issue, remoteUser);
 		    		messages.add(commentText);
 		    	}
 		    	
@@ -82,27 +90,43 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		return messages;
 	}
 	
-	private GerritCommentAction formatComment(JSONObject commentJSON)
+	private GerritCommentAction formatComment(JSONObject commentJSON, Issue issue, User user)
 	{
 		GerritCommentAction commentText = null;
 		try 
 		{
 			Calendar calendar = Calendar.getInstance();
-			DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 			
 			JSONObject reviewerJSON = commentJSON.getJSONObject("reviewer");
 			String reviewer = reviewerJSON.getString("name");
 			String username = reviewerJSON.getString("username");
 			
-			calendar.setTimeInMillis(commentJSON.getLong("timestamp"));
+			calendar.setTimeInMillis(commentJSON.getLong("timestamp") * 1000);
 			Date commentDate = calendar.getTime();
 			
 			String message = commentJSON.getString("message") + "\n\n\n";
+			FieldLayoutManager fieldLayoutManager = ComponentAccessor.getFieldLayoutManager();
+			RendererManager rendererManager = ComponentAccessor.getRendererManager();
+			CommentManager commentManager = ComponentAccessor.getCommentManager();
+			ApplicationUser commenter = ComponentAccessor.getUserManager().getUserByNameEvenWhenUnknown(reviewer);
+			
+			
+			
+			CommentImpl comment = new CommentImpl(commentManager, commenter, commenter, message, "", 1L, commentDate, commentDate, issue);
+			//Comment comment = commentManager.create(issue, commenter, message, "", 0L, commentDate, false);
+			//Comment comment = commentManager.create(issue, commenter, message, false);
+			
+			//IssueTabPanelModuleDescriptor;
+			
+			//commentText = new CommentAction(this.descriptor, comment, false, true, false, rendererManager, fieldLayoutManager, dateTimeFormatter);
+			
+			//System.err.println(commenter.);
+			
 			
 			commentText = new GerritCommentAction(commentDate, reviewer, username, message);
 			
 		} 
-		catch (JSONException e) 
+		catch (Exception e) 
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -146,7 +170,7 @@ class GerritCommentAction implements IssueAction {
 	@Override
 	public String getHtml() {
 		// TODO Auto-generated method stub
-		String html = "<div class='issue-data-block activity-comment twixi-block  expanded'>" + 
+		/*String html = "<div class='issue-data-block activity-comment twixi-block  expanded'>" + 
 	    "<div class='twixi-wrap verbose actionContainer'>" + 
 	    "    <div class='action-head'>" +  
 	    "        <div class='action-details'>" + 
@@ -170,7 +194,38 @@ class GerritCommentAction implements IssueAction {
 	    "		</p> " +
 	    "	</div>" +
 	    "</div>" +
-	    "</div>";
+	    "</div>";*/
+		
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd kk:mmZ");
+		String date = formatter.format(commentDate).replaceAll(" ", "T");
+		
+		String html = "" +
+		"<div class='issue-data-block activity-comment twixi-block  expanded'>" +
+		"  <div class='twixi-wrap verbose actionContainer'>" +
+		"    <div class='action-head'>" +
+		"      <a href='#' class='twixi'><span class='icon twixi-opened'><span>Hide</span></span></a>" +
+		"      <div class='action-details'>" +
+		"        <a class='user-hover user-avatar' rel=" + username + " href='#'><span class='aui-avatar aui-avatar-xsmall'><span class='aui-avatar-inner'><img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'></span></span>" + reviewer + " (" + username + ") </a>" +
+		"        added a comment - <span class='commentdate_10443_verbose subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" +
+		"      </div>" +
+		"    </div>" +
+		"    <div class='action-body flooded'>" +
+		"      <p>" + message + "</p>" +
+		"    </div>" +
+		"  </div>" +
+		"  <div class='twixi-wrap concise actionContainer'>" +
+		"    <div class='action-head'>" +
+		"      <a href='#' class='twixi'><span class='icon twixi-closed'><span>Show</span></span></a>" +
+		"      <div class='action-details flooded'>" +
+		"        <a class='user-hover user-avatar' rel=" + username + " href='#'><span class='aui-avatar aui-avatar-xsmall'><span class='aui-avatar-inner'><img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'></span></span>" + reviewer + " (" + username + ") </a>" +
+		"        added a comment - <span class='commentdate_10443_concise subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" + message + "</div>" +
+		"    </div>" +
+		"  </div>" +
+		"</div>";
+		
+		
+		
+		
 		return html;
 	}
 
