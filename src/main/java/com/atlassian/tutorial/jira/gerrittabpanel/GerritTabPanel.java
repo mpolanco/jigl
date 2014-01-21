@@ -104,7 +104,7 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 			calendar.setTimeInMillis(commentJSON.getLong("timestamp") * 1000);
 			Date commentDate = calendar.getTime();
 			
-			String message = commentJSON.getString("message") + "\n\n\n";
+			String message = commentJSON.getString("message");
 			FieldLayoutManager fieldLayoutManager = ComponentAccessor.getFieldLayoutManager();
 			RendererManager rendererManager = ComponentAccessor.getRendererManager();
 			CommentManager commentManager = ComponentAccessor.getCommentManager();
@@ -199,6 +199,9 @@ class GerritCommentAction implements IssueAction {
 		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd kk:mmZ");
 		String date = formatter.format(commentDate).replaceAll(" ", "T");
 		
+		String regex = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+		String newMessage = message.replaceAll(regex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>");
+		
 		String html = "" +
 		"<div class='issue-data-block activity-comment twixi-block  expanded'>" +
 		"  <div class='twixi-wrap verbose actionContainer'>" +
@@ -210,7 +213,7 @@ class GerritCommentAction implements IssueAction {
 		"      </div>" +
 		"    </div>" +
 		"    <div class='action-body flooded'>" +
-		"      <p>" + message + "</p>" +
+		"      <p>" + newMessage + "</p>" +
 		"    </div>" +
 		"  </div>" +
 		"  <div class='twixi-wrap concise actionContainer'>" +
@@ -218,7 +221,7 @@ class GerritCommentAction implements IssueAction {
 		"      <a href='#' class='twixi'><span class='icon twixi-closed'><span>Show</span></span></a>" +
 		"      <div class='action-details flooded'>" +
 		"        <a class='user-hover user-avatar' rel=" + username + " href='#'><span class='aui-avatar aui-avatar-xsmall'><span class='aui-avatar-inner'><img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'></span></span>" + reviewer + " (" + username + ") </a>" +
-		"        added a comment - <span class='commentdate_10443_concise subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" + message + "</div>" +
+		"        added a comment - <span class='commentdate_10443_concise subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" + "  |  " + message + "</div>" +
 		"    </div>" +
 		"  </div>" +
 		"</div>";
