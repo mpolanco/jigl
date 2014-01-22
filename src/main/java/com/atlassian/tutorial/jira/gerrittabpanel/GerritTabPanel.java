@@ -13,20 +13,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.core.util.DateUtils;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.jira.datetime.DateTimeFormatter;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.RendererManager;
-import com.atlassian.jira.issue.comments.CommentImpl;
-import com.atlassian.jira.issue.comments.CommentManager;
 import com.atlassian.jira.issue.fields.CustomField;
-import com.atlassian.jira.issue.fields.layout.field.FieldLayoutManager;
-import com.atlassian.jira.issue.tabpanels.CommentAction;
+import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel;
-import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.util.json.JSONTokener;
@@ -35,51 +30,48 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	private static final Logger log = LoggerFactory
 			.getLogger(GerritTabPanel.class);
-	private static final String HOST = "review.openstack.org";
-	private static final String USER = "mpolanco";
-	private static final int PORT = 29418;
-	private static final String COMMENTS = "comments";
-	private DateTimeFormatter dateTimeFormatter;
-
-	public GerritTabPanel(DateTimeFormatter dateTimeFormatter)
-	{
-		this.dateTimeFormatter = dateTimeFormatter.forLoggedInUser();
-	}
+	private final String HOST = "review.openstack.org";
+	private final String USER = "mpolanco";
+	private final int PORT = 29418;
+	private final String KEY_COMMENTS = "comments";
 	
 	public List getActions(Issue issue, User remoteUser) {
 		List<IssueAction> messages = new ArrayList<IssueAction>();
 		
+		CustomField gerritLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
+		String gitID = issue.getCustomFieldValue(gerritLinkField).toString();
+		if(!gitID.matches("[-a-zA-Z0-9]*"))
+		{
+			messages.add(new GenericMessageAction("Commit ID not properly formatted"));
+			return messages;
+		}
+		
+		String sshCom = "ssh -p " + PORT + " " + USER + "@" + HOST + " gerrit query --format=json --current-patch-set --comments change:" + gitID;
+		
 		try {
-			CustomField gerritLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
-			String gitID = issue.getCustomFieldValue(gerritLinkField).toString();
-			System.err.println("GID" + gitID);
 			
-			Process p = Runtime.getRuntime().exec("ssh -p 29418 mpolanco@review.openstack.org gerrit query --format=json --current-patch-set --comments change:" + gitID); //I741b3a39e1ec24ee81d441788be72f7272");
+			
+			Process p = Runtime.getRuntime().exec(sshCom);
 		    p.waitFor();
-		    
-		    System.err.println("waiting");
 		 
 		    BufferedReader reader = 
 		         new BufferedReader(new InputStreamReader(p.getInputStream()));
 		 
-		    String line = "";		
-		    line = reader.readLine();
+		    String line = reader.readLine();
 		    if (line != null)
 		    {
-		    	System.err.println("line: " + line);
 		    	JSONTokener tokener = new JSONTokener(line);
 		    	JSONObject finalResult = new JSONObject(tokener);
-		    	JSONArray comments = finalResult.getJSONArray(COMMENTS);
+		    	JSONArray comments = finalResult.getJSONArray(KEY_COMMENTS);
 		    	for (int k = 0; k < comments.length(); k++)
 		    	{
 		    		JSONObject commentJSON = comments.getJSONObject(k);
-		    		GerritCommentAction commentText = formatComment(commentJSON, issue, remoteUser);
-		    		messages.add(commentText);
+		    		GerritCommentAction commentAction= createCommentActionFromJSON(commentJSON);
+		    		messages.add(commentAction);
 		    	}
 		    	
+		    	//reverse message order to display most recent first
 		    	Collections.reverse(messages);
-		    	
-		    	System.err.println(finalResult);
 		    }
 
 		} catch (Exception e) {
@@ -90,7 +82,7 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		return messages;
 	}
 	
-	private GerritCommentAction formatComment(JSONObject commentJSON, Issue issue, User user)
+	private GerritCommentAction createCommentActionFromJSON(JSONObject commentJSON)
 	{
 		GerritCommentAction commentText = null;
 		try 
@@ -101,11 +93,12 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 			String reviewer = reviewerJSON.getString("name");
 			String username = reviewerJSON.getString("username");
 			
-			calendar.setTimeInMillis(commentJSON.getLong("timestamp") * 1000);
+			calendar.setTimeInMillis(commentJSON.getLong("timestamp") * DateUtils.SECOND_MILLIS);
 			Date commentDate = calendar.getTime();
 			
 			String message = commentJSON.getString("message");
-			FieldLayoutManager fieldLayoutManager = ComponentAccessor.getFieldLayoutManager();
+			
+			/*FieldLayoutManager fieldLayoutManager = ComponentAccessor.getFieldLayoutManager();
 			RendererManager rendererManager = ComponentAccessor.getRendererManager();
 			CommentManager commentManager = ComponentAccessor.getCommentManager();
 			ApplicationUser commenter = ComponentAccessor.getUserManager().getUserByNameEvenWhenUnknown(reviewer);
@@ -113,14 +106,14 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 			
 			
 			CommentImpl comment = new CommentImpl(commentManager, commenter, commenter, message, "", 1L, commentDate, commentDate, issue);
-			//Comment comment = commentManager.create(issue, commenter, message, "", 0L, commentDate, false);
-			//Comment comment = commentManager.create(issue, commenter, message, false);
+			Comment comment = commentManager.create(issue, commenter, message, "", 0L, commentDate, false);
+			Comment comment = commentManager.create(issue, commenter, message, false);
 			
-			//IssueTabPanelModuleDescriptor;
+			IssueTabPanelModuleDescriptor;
 			
-			//commentText = new CommentAction(this.descriptor, comment, false, true, false, rendererManager, fieldLayoutManager, dateTimeFormatter);
+			commentText = new CommentAction(this.descriptor, comment, false, true, false, rendererManager, fieldLayoutManager, dateTimeFormatter);
 			
-			//System.err.println(commenter.);
+			System.err.println(commenter.); */
 			
 			
 			commentText = new GerritCommentAction(commentDate, reviewer, username, message);
@@ -169,32 +162,6 @@ class GerritCommentAction implements IssueAction {
 
 	@Override
 	public String getHtml() {
-		// TODO Auto-generated method stub
-		/*String html = "<div class='issue-data-block activity-comment twixi-block  expanded'>" + 
-	    "<div class='twixi-wrap verbose actionContainer'>" + 
-	    "    <div class='action-head'>" +  
-	    "        <div class='action-details'>" + 
-	    "			<a class='user-hover user-avatar' rel='" + username + "' href=#>" +
-	    "			<span class='aui-avatar aui-avatar-xsmall'>" +
-	    "			<span class='aui-avatar-inner'>" +
-	    "			<img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'>" +
-	    "			</span>" +
-	    "			</span> " +
-	    "			" + reviewer + " (" + username + ")" +
-	    "			</a>" +
-	    "		added a comment  - " +
-	    "		<span class='commentdate_10000_verbose subText'>" +
-	    "		<span class='date user-tz' title='17/Jan/14 1:59 PM'>" +
-	    "		<time class='livestamp' datetime='2014-01-17T13:59-0600'>2 hours ago</time>" +
-	    "		</span></span>  " +
-	    "		</div>" +
-	    "	</div>" +
-	    "	<div class='action-body flooded'>" +
-	    "		<p>" + message +
-	    "		</p> " +
-	    "	</div>" +
-	    "</div>" +
-	    "</div>";*/
 		
 		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd kk:mmZ");
 		String date = formatter.format(commentDate).replaceAll(" ", "T");
@@ -209,7 +176,7 @@ class GerritCommentAction implements IssueAction {
 		"      <a href='#' class='twixi'><span class='icon twixi-opened'><span>Hide</span></span></a>" +
 		"      <div class='action-details'>" +
 		"        <a class='user-hover user-avatar' rel=" + username + " href='#'><span class='aui-avatar aui-avatar-xsmall'><span class='aui-avatar-inner'><img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'></span></span>" + reviewer + " (" + username + ") </a>" +
-		"        added a comment - <span class='commentdate_10443_verbose subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" +
+		"        added a comment - <span class='subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" +
 		"      </div>" +
 		"    </div>" +
 		"    <div class='action-body flooded'>" +
@@ -221,20 +188,16 @@ class GerritCommentAction implements IssueAction {
 		"      <a href='#' class='twixi'><span class='icon twixi-closed'><span>Show</span></span></a>" +
 		"      <div class='action-details flooded'>" +
 		"        <a class='user-hover user-avatar' rel=" + username + " href='#'><span class='aui-avatar aui-avatar-xsmall'><span class='aui-avatar-inner'><img src='/jira/secure/useravatar?size=xsmall&amp;avatarId=10122'></span></span>" + reviewer + " (" + username + ") </a>" +
-		"        added a comment - <span class='commentdate_10443_concise subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" + "  |  " + message + "</div>" +
+		"        added a comment - <span class='subText'><span class='date user-tz'><time class='livestamp' datetime='" + date + "'></time></span></span>" + "  |  " + message + "</div>" +
 		"    </div>" +
 		"  </div>" +
 		"</div>";
-		
-		
-		
 		
 		return html;
 	}
 
 	@Override
 	public boolean isDisplayActionAllTab() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
