@@ -1,17 +1,14 @@
 package com.atlassian.tutorial.jira.gerrittabpanel;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.util.DateUtils;
 import com.atlassian.crowd.embedded.api.User;
@@ -23,30 +20,45 @@ import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel;
 import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.util.json.JSONTokener;
 
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
-	private static final Logger log = LoggerFactory
-			.getLogger(GerritTabPanel.class);
+	//private static final Logger log = LoggerFactory
+	//		.getLogger(GerritTabPanel.class);
 	private final String HOST = "review.openstack.org";
 	private final String USER = "mpolanco";
 	private final int PORT = 29418;
 	private final String KEY_COMMENTS = "comments";
 	
-	public List getActions(Issue issue, User remoteUser) {
+	public List<IssueAction> getActions(Issue issue, User remoteUser) {
 		List<IssueAction> messages = new ArrayList<IssueAction>();
 		
+		//read and validate the Gerrit commit hash
 		CustomField gerritLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
-		String gitID = issue.getCustomFieldValue(gerritLinkField).toString();
-		if(!gitID.matches("[-a-zA-Z0-9]*"))
+		if(gerritLinkField == null)
 		{
-			messages.add(new GenericMessageAction("Commit ID not properly formatted"));
+			messages.add(new GenericMessageAction("\"Git Commit ID\" custom field not available. Cannot process Gerrit Review comments"));
 			return messages;
 		}
 		
-		String sshCom = "ssh -p " + PORT + " " + USER + "@" + HOST + " gerrit query --format=json --current-patch-set --comments change:" + gitID;
+		String gitHash = issue.getCustomFieldValue(gerritLinkField).toString().trim();
+		if(gitHash.length() == 0)
+		{
+			messages.add(new GenericMessageAction("To view related Gerrit review comments for this issue please provide the Git Commit Hash"));
+			return messages;
+		}
+		
+		else if(!isValidGitHash(gitHash))
+		{
+			messages.add(new GenericMessageAction("Gerrit Commit ID not properly formatted"));
+			return messages;
+		}
+		
+		//frame command to access SSH API
+		String sshCom = "ssh -p " + PORT + " " + USER + "@" + HOST + " gerrit query --format=json --current-patch-set --comments change:" + gitHash;
 		
 		try {
 			
@@ -62,11 +74,17 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		    {
 		    	JSONTokener tokener = new JSONTokener(line);
 		    	JSONObject finalResult = new JSONObject(tokener);
+		    	if (!finalResult.has(KEY_COMMENTS))
+		    	{
+		    		messages.add(new GenericMessageAction("No comments available for this Gerrit review."));
+					return messages;
+		    	}
+		    	
 		    	JSONArray comments = finalResult.getJSONArray(KEY_COMMENTS);
 		    	for (int k = 0; k < comments.length(); k++)
 		    	{
 		    		JSONObject commentJSON = comments.getJSONObject(k);
-		    		GerritCommentAction commentAction= createCommentActionFromJSON(commentJSON);
+		    		GerritCommentAction commentAction = createCommentActionFromJSON(commentJSON);
 		    		messages.add(commentAction);
 		    	}
 		    	
@@ -74,54 +92,43 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		    	Collections.reverse(messages);
 		    }
 
-		} catch (Exception e) {
-			System.err.println(e);
-		}
-
+		} catch (JSONException e) {
+			// JSON returned from SSH API did not contain proper keys
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// Exception in attempting to execute the ssh command
+			e.printStackTrace();
+		} catch (IOException e) {
+			// Exception in reading from the input stream
+			e.printStackTrace();
+		} 
 		
 		return messages;
+	}
+	
+	private boolean isValidGitHash(String gitHash)
+	{
+		//TODO: better hash verification?
+		return gitHash.matches("[-a-zA-Z0-9]*");
 	}
 	
 	private GerritCommentAction createCommentActionFromJSON(JSONObject commentJSON)
 	{
 		GerritCommentAction commentText = null;
 		try 
-		{
-			Calendar calendar = Calendar.getInstance();
-			
+		{	
 			JSONObject reviewerJSON = commentJSON.getJSONObject("reviewer");
 			String reviewer = reviewerJSON.getString("name");
 			String username = reviewerJSON.getString("username");
-			
-			calendar.setTimeInMillis(commentJSON.getLong("timestamp") * DateUtils.SECOND_MILLIS);
-			Date commentDate = calendar.getTime();
-			
 			String message = commentJSON.getString("message");
-			
-			/*FieldLayoutManager fieldLayoutManager = ComponentAccessor.getFieldLayoutManager();
-			RendererManager rendererManager = ComponentAccessor.getRendererManager();
-			CommentManager commentManager = ComponentAccessor.getCommentManager();
-			ApplicationUser commenter = ComponentAccessor.getUserManager().getUserByNameEvenWhenUnknown(reviewer);
-			
-			
-			
-			CommentImpl comment = new CommentImpl(commentManager, commenter, commenter, message, "", 1L, commentDate, commentDate, issue);
-			Comment comment = commentManager.create(issue, commenter, message, "", 0L, commentDate, false);
-			Comment comment = commentManager.create(issue, commenter, message, false);
-			
-			IssueTabPanelModuleDescriptor;
-			
-			commentText = new CommentAction(this.descriptor, comment, false, true, false, rendererManager, fieldLayoutManager, dateTimeFormatter);
-			
-			System.err.println(commenter.); */
-			
-			
+			Date commentDate = new Date(commentJSON.getLong("timestamp") * DateUtils.SECOND_MILLIS);
+						
 			commentText = new GerritCommentAction(commentDate, reviewer, username, message);
 			
 		} 
-		catch (Exception e) 
+		catch (JSONException e) 
 		{
-			// TODO Auto-generated catch block
+			// JSON returned from SSH API did not have a key available
 			e.printStackTrace();
 		}
 		
@@ -148,13 +155,6 @@ class GerritCommentAction implements IssueAction {
 		this.username = username;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.atlassian.jira.plugin.issuetabpanel.AbstractIssueAction#getTimePerformed
-	 * ()
-	 */
 	@Override
 	public Date getTimePerformed() {
 		return commentDate;
@@ -162,14 +162,15 @@ class GerritCommentAction implements IssueAction {
 
 	@Override
 	public String getHtml() {
-		
+		// convert date for time tags in html
 		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd kk:mmZ");
 		String date = formatter.format(commentDate).replaceAll(" ", "T");
 		
+		// append url tags to register links
 		String regex = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-		String newMessage = message.replaceAll(regex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>");
+		String newMessage = message.replaceAll(regex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>"); // replace new lines with break tags
 		
-		String html = "" +
+		String commentHTML = "" +
 		"<div class='issue-data-block activity-comment twixi-block  expanded'>" +
 		"  <div class='twixi-wrap verbose actionContainer'>" +
 		"    <div class='action-head'>" +
@@ -193,7 +194,7 @@ class GerritCommentAction implements IssueAction {
 		"  </div>" +
 		"</div>";
 		
-		return html;
+		return commentHTML;
 	}
 
 	@Override
