@@ -24,6 +24,11 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.util.json.JSONTokener;
 
+/**
+ * @author marc7279
+ * GerritTabPanel creates the "Gerrit" tab in a Jira issue. For a given git hash, the tab
+ * will retrieve and display the related review comments.
+ */
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	private final String HOST = "review.openstack.org";

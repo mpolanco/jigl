@@ -21,6 +21,11 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.util.json.JSONTokener;
 
+/**
+ * @author marc7279
+ * WhiteboardTabPanel creates the "Whiteboard" tab in Jira. For a given Launchpad
+ * blueprint URL, the tab will retrieve and display the related whiteboard.
+ */
 public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	
