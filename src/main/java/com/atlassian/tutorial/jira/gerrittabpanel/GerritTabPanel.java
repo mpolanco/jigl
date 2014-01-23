@@ -26,13 +26,15 @@ import com.atlassian.jira.util.json.JSONTokener;
 
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
-	//private static final Logger log = LoggerFactory
-	//		.getLogger(GerritTabPanel.class);
 	private final String HOST = "review.openstack.org";
 	private final String USER = "mpolanco";
 	private final int PORT = 29418;
 	private final String KEY_COMMENTS = "comments";
 	
+	/* (non-Javadoc)
+	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel#getActions(com.atlassian.jira.issue.Issue, com.atlassian.crowd.embedded.api.User)
+	 */
+	@Override
 	public List<IssueAction> getActions(Issue issue, User remoteUser) {
 		List<IssueAction> messages = new ArrayList<IssueAction>();
 		
@@ -135,6 +137,10 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		return commentText;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel#showPanel(com.atlassian.jira.issue.Issue, com.atlassian.crowd.embedded.api.User)
+	 */
+	@Override
 	public boolean showPanel(Issue issue, User remoteUser) {
 		return true;
 	}
@@ -155,11 +161,17 @@ class GerritCommentAction implements IssueAction {
 		this.username = username;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueAction#getTimePerformed()
+	 */
 	@Override
 	public Date getTimePerformed() {
 		return commentDate;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueAction#getHtml()
+	 */
 	@Override
 	public String getHtml() {
 		// convert date for time tags in html
@@ -167,8 +179,8 @@ class GerritCommentAction implements IssueAction {
 		String date = formatter.format(commentDate).replaceAll(" ", "T");
 		
 		// append url tags to register links
-		String regex = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-		String newMessage = message.replaceAll(regex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>"); // replace new lines with break tags
+		String urlRegex = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+		String newMessage = message.replaceAll(urlRegex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>"); // replace new lines with break tags
 		
 		String commentHTML = "" +
 		"<div class='issue-data-block activity-comment twixi-block  expanded'>" +
@@ -197,6 +209,9 @@ class GerritCommentAction implements IssueAction {
 		return commentHTML;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueAction#isDisplayActionAllTab()
+	 */
 	@Override
 	public boolean isDisplayActionAllTab() {
 		return false;
