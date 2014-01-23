@@ -44,14 +44,14 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		List<IssueAction> messages = new ArrayList<IssueAction>();
 		
 		//read and validate the Gerrit commit hash
-		CustomField gerritLinkField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
-		if(gerritLinkField == null)
+		CustomField gerritLinkFieldContent = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
+		if(gerritLinkFieldContent == null)
 		{
 			messages.add(new GenericMessageAction("\"Git Commit ID\" custom field not available. Cannot process Gerrit Review comments"));
 			return messages;
 		}
 		
-		String gitHash = issue.getCustomFieldValue(gerritLinkField).toString().trim();
+		String gitHash = issue.getCustomFieldValue(gerritLinkFieldContent).toString().trim();
 		if(gitHash.length() == 0)
 		{
 			messages.add(new GenericMessageAction("To view related Gerrit review comments for this issue please provide the Git Commit Hash"));
@@ -87,11 +87,11 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 					return messages;
 		    	}
 		    	
-		    	JSONArray comments = finalResult.getJSONArray(KEY_COMMENTS);
-		    	for (int k = 0; k < comments.length(); k++)
+		    	JSONArray commentsJson = finalResult.getJSONArray(KEY_COMMENTS);
+		    	for (int k = 0; k < commentsJson.length(); k++)
 		    	{
-		    		JSONObject commentJSON = comments.getJSONObject(k);
-		    		GerritCommentAction commentAction = createCommentActionFromJSON(commentJSON);
+		    		JSONObject commentJson = commentsJson.getJSONObject(k);
+		    		GerritCommentAction commentAction = createCommentActionFromJSON(commentJson);
 		    		messages.add(commentAction);
 		    	}
 		    	
