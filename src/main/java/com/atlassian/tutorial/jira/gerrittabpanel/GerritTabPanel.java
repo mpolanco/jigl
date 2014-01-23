@@ -95,6 +95,9 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		    		messages.add(commentAction);
 		    	}
 		    	
+		    	String status = finalResult.getString("status");
+		    	messages.add(new GenericMessageAction("<h2>Gerrit Status: " + status + "</h2>"));
+		    	
 		    	//reverse message order to display most recent first
 		    	Collections.reverse(messages);
 		    }
