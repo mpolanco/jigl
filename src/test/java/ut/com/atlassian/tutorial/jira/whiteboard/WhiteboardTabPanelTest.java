@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import com.atlassian.tutorial.jira.whiteboard.WhiteboardTabPanel;
 
-
 /**
  * @since 3.5
  */

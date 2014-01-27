@@ -34,7 +34,7 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 	private final String BASE_LAUNCHPAD_BLUEPRINT_HOST = "blueprints.launchpad.net";
 	private final String URL_REGEX = "\\b(https?|http)://blueprints.launchpad.net/[-a-zA-Z0-9+&@#%?=~_|!:,.;]*/[+]spec/[-a-zA-Z0-9+&@#%=~_|]*[-a-zA-Z0-9+&@#/%=~_|]";
 	private final String WHITEBOARD = "whiteboard";
-	private final String LAUNCHPAD_URL_FIELD_NAME = "Launchpad Blueprint Link";
+	private final String LAUNCHPAD_URL_FIELD_NAME = "Launchpad Blueprint URL";
 
 	/* (non-Javadoc)
 	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel#getActions(com.atlassian.jira.issue.Issue, com.atlassian.crowd.embedded.api.User)
@@ -52,7 +52,14 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 			return messages;
 		}
 		
-		String bpURL = issue.getCustomFieldValue(bpLinkField).toString().trim();
+		Object bpURLFieldObj = issue.getCustomFieldValue(bpLinkField);
+		if (bpURLFieldObj == null)
+		{
+			messages.add(new GenericMessageAction("\"" + LAUNCHPAD_URL_FIELD_NAME + "\" not provided. Please provide the Launchpad URL to view the whiteboard for this issue."));
+			return messages;
+		}
+		
+		String bpURL = bpURLFieldObj.toString().trim();
 		
 		if(bpURL.length() == 0)
 		{

@@ -32,9 +32,10 @@ import com.atlassian.jira.util.json.JSONTokener;
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	private final String HOST = "review.openstack.org";
-	private final String USER = "mpolanco";
+	private final String USER = "rackjira";
 	private final int PORT = 29418;
 	private final String KEY_COMMENTS = "comments";
+	private final String GERRIT_ID_FIELD_NAME = "Gerrit ID";
 	
 	/* (non-Javadoc)
 	 * @see com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel#getActions(com.atlassian.jira.issue.Issue, com.atlassian.crowd.embedded.api.User)
@@ -44,14 +45,21 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		List<IssueAction> messages = new ArrayList<IssueAction>();
 		
 		//read and validate the Gerrit commit hash
-		CustomField gerritLinkFieldContent = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Git Commit ID");
+		CustomField gerritLinkFieldContent = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(GERRIT_ID_FIELD_NAME);
 		if(gerritLinkFieldContent == null)
 		{
-			messages.add(new GenericMessageAction("\"Git Commit ID\" custom field not available. Cannot process Gerrit Review comments"));
+			messages.add(new GenericMessageAction("\"" + GERRIT_ID_FIELD_NAME + "\" custom field not available. Cannot process Gerrit Review comments"));
 			return messages;
 		}
 		
-		String gitHash = issue.getCustomFieldValue(gerritLinkFieldContent).toString().trim();
+		Object gitHashFieldObj = issue.getCustomFieldValue(gerritLinkFieldContent);
+		if (gitHashFieldObj == null)
+		{
+			messages.add(new GenericMessageAction("\"" + GERRIT_ID_FIELD_NAME + "\" not provided. Please provide Gerrit ID to see review comments for this issue."));
+			return messages;
+		}
+		
+		String gitHash = gitHashFieldObj.toString().trim();
 		if(gitHash.length() == 0)
 		{
 			messages.add(new GenericMessageAction("To view related Gerrit review comments for this issue please provide the Git Commit Hash"));
@@ -65,14 +73,11 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 		}
 		
 		//frame command to access SSH API
-		String sshCom = "ssh -p " + PORT + " " + USER + "@" + HOST + " gerrit query --format=json --current-patch-set --comments change:" + gitHash;
+		String sshCom = "ssh -i /home/jira/.ssh/id_rsa -p " + PORT + " " + USER + "@" + HOST + " gerrit query --format=json --current-patch-set --comments change:" + gitHash;
 		
 		try {
-			
-			
 			Process p = Runtime.getRuntime().exec(sshCom);
 		    p.waitFor();
-		 
 		    BufferedReader reader = 
 		         new BufferedReader(new InputStreamReader(p.getInputStream()));
 		 
