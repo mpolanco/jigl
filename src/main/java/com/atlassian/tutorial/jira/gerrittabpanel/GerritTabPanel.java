@@ -1,6 +1,7 @@
 package com.atlassian.tutorial.jira.gerrittabpanel;
 
 import java.io.BufferedReader;
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
@@ -191,9 +192,11 @@ class GerritCommentAction implements IssueAction {
 		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd kk:mmZ");
 		String date = formatter.format(commentDate).replaceAll(" ", "T");
 		
+		String escaped = escapeHtml(message);
+		
 		// append url tags to register links
 		String urlRegex = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-		String newMessage = message.replaceAll(urlRegex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>"); // replace new lines with break tags
+		String newMessage = escaped.replaceAll(urlRegex, "<a href=\"$0\">$0</a>").replaceAll("\n", "<br/>"); // replace new lines with break tags
 		
 		String commentHTML = "" +
 		"<div class='issue-data-block activity-comment twixi-block  expanded'>" +

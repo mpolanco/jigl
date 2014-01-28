@@ -1,5 +1,7 @@
 package com.atlassian.tutorial.jira.whiteboard;
 
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -121,7 +123,7 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 		    JSONObject finalResult = new JSONObject( tokener );
 		    if ( finalResult.has(WHITEBOARD) && finalResult.getString(WHITEBOARD).length() > 0)
 		    {
-		    	messages.add(new GenericMessageAction(finalResult.getString(WHITEBOARD).replaceAll("\n", "<br/>")));
+		    	messages.add(new GenericMessageAction(escapeHtml(finalResult.getString(WHITEBOARD)).replaceAll("\n", "<br/>")));
 		    }
 		    else
 		    {
