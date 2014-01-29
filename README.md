@@ -23,7 +23,7 @@ In order for this plugin to fully work, the user must have/complete the followin
 
 3. The following environment variable must be added to the environment such that it is accessible to the running Jira instance:
 
-	(`GERRIT_USER = username`)
+	`GERRIT_USER = username`
 
 	Where "username" is the username set within the User's openstack account.
 
