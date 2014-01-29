@@ -1,4 +1,4 @@
-package ut.com.atlassian.tutorial.jira.whiteboard;
+package ut.com.atlassian.launchpad.jira.whiteboard;
 
 import static org.mockito.Mockito.when;
 
@@ -24,7 +24,7 @@ import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.managers.MockCustomFieldManager;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.user.MockUser;
-import com.atlassian.tutorial.jira.whiteboard.WhiteboardTabPanel;
+import com.atlassian.launchpad.jira.whiteboard.WhiteboardTabPanel;
 
 /**
  * @since 3.5
@@ -61,7 +61,7 @@ public class WhiteboardTabPanelTest extends TestCase {
 
 	}
 
-	/*@Test
+	@Test
 	public void testCustomFieldNotAvailable() throws Exception {
 		String expectedMessage = "\"" + LAUNCHPAD_URL_FIELD_NAME + "\" custom field not available. Cannot process Gerrit Review comments";
 		when(
@@ -117,6 +117,6 @@ public class WhiteboardTabPanelTest extends TestCase {
 		List<IssueAction> actions = testPanel.getActions(mockIssue, mockUser);
 		assertTrue("Number of messages should be 1 but received: " + actions.size(), actions.size() == 1);
 		assertEquals(expectedMessage, actions.get(0).getHtml());
-	}*/
+	}
 
 }

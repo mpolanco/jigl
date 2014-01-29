@@ -1,8 +1,8 @@
-package ut.com.atlassian.tutorial.testplugin;
+package ut.com.atlassian.launchpad.integration;
 
 import org.junit.Test;
-import com.atlassian.tutorial.testplugin.MyPluginComponent;
-import com.atlassian.tutorial.testplugin.MyPluginComponentImpl;
+import com.atlassian.launchpad.integration.MyPluginComponent;
+import com.atlassian.launchpad.integration.MyPluginComponentImpl;
 
 import static org.junit.Assert.assertEquals;
 

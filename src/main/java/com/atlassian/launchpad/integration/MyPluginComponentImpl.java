@@ -1,4 +1,4 @@
-package com.atlassian.tutorial.testplugin;
+package com.atlassian.launchpad.integration;
 
 import com.atlassian.sal.api.ApplicationProperties;
 

@@ -1,4 +1,4 @@
-package com.atlassian.tutorial.jira.whiteboard;
+package com.atlassian.launchpad.jira.whiteboard;
 
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 

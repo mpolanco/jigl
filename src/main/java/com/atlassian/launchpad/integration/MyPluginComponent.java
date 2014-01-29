@@ -1,4 +1,4 @@
-package com.atlassian.tutorial.testplugin;
+package com.atlassian.launchpad.integration;
 
 public interface MyPluginComponent
 {

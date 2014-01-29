@@ -1,4 +1,4 @@
-package com.atlassian.tutorial.jira.gerrittabpanel;
+package com.atlassian.launchpad.jira.gerrittabpanel;
 
 import java.io.BufferedReader;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;

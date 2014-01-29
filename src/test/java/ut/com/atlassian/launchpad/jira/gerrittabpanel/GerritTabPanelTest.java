@@ -1,9 +1,9 @@
-package ut.com.atlassian.tutorial.jira.gerrittabpanel;
+package ut.com.atlassian.launchpad.jira.gerrittabpanel;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import com.atlassian.tutorial.jira.gerrittabpanel.GerritTabPanel;
+import com.atlassian.launchpad.jira.gerrittabpanel.GerritTabPanel;
 
 /**
  * @since 3.5

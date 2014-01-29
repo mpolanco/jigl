@@ -1,39 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
-  <plugin-info>
-    <description>${project.description}</description>
-    <version>${project.version}</version>
-    <vendor name="${project.organization.name}" url="${project.organization.url}"/>
-    <param name="plugin-icon">images/pluginIcon.png</param>
-    <param name="plugin-logo">images/pluginLogo.png</param>
-  </plugin-info>
-  <!-- add our i18n resource -->
-  <resource type="i18n" name="i18n" location="testplugin"/>
-  <!-- add our web resources -->
-  <web-resource key="testplugin-resources" name="testplugin Web Resources">
-    <dependency>com.atlassian.auiplugin:ajs</dependency>
-    <resource type="download" name="testplugin.css" location="/css/testplugin.css"/>
-    <resource type="download" name="testplugin.js" location="/js/testplugin.js"/>
-    <resource type="download" name="images/" location="/images"/>
-    <context>testplugin</context>
-  </web-resource>
-  <!-- publish our component -->
-  <component key="myPluginComponent" class="com.atlassian.tutorial.testplugin.MyPluginComponentImpl" public="true">
-    <interface>com.atlassian.tutorial.testplugin.MyPluginComponent</interface>
-  </component>
-  <!-- import from the product container -->
-  <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties"/>
-  <issue-tabpanel key="whiteboard-tab-panel" name="Whiteboard Tab Panel" i18n-name-key="whiteboard-tab-panel.name" class="com.atlassian.tutorial.jira.whiteboard.WhiteboardTabPanel">
-    <description key="whiteboard-tab-panel.description">The Whiteboard Tab Panel Plugin</description>
-    <label key="Whiteboard"/>
-    <order>10</order>
-    <resource type="velocity" name="view" location="templates/tabpanels/whiteboard-tab-panel.vm"/>
-  </issue-tabpanel>
-  <issue-tabpanel key="gerrit-tab-panel" name="Gerrit Tab Panel" i18n-name-key="gerrit-tab-panel.name" class="com.atlassian.tutorial.jira.gerrittabpanel.GerritTabPanel">
-    <description key="gerrit-tab-panel.description">The Gerrit Tab Panel Plugin</description>
-    <label key="gerrit-tab-panel.label"></label>
-    <order>10</order>
-    <resource type="velocity" name="view" location="templates/tabpanels/gerrit-tab-panel.vm"/>
-  </issue-tabpanel>
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <param name="plugin-icon">images/pluginIcon.png</param>
+        <param name="plugin-logo">images/pluginLogo.png</param>
+    </plugin-info>
+
+    <!-- add our i18n resource -->
+    <resource type="i18n" name="i18n" location="Launchpad Integration Plugin"/>
+    
+    <!-- add our web resources -->
+    <web-resource key="Launchpad Integration Plugin-resources" name="Launchpad Integration Plugin Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        
+        <resource type="download" name="Launchpad Integration Plugin.css" location="/css/Launchpad Integration Plugin.css"/>
+        <resource type="download" name="Launchpad Integration Plugin.js" location="/js/Launchpad Integration Plugin.js"/>
+        <resource type="download" name="images/" location="/images"/>
+
+        <context>Launchpad Integration Plugin</context>
+    </web-resource>
+    
+    <!-- publish our component -->
+    <component key="myPluginComponent" class="com.atlassian.launchpad.integration.MyPluginComponentImpl" public="true">
+        <interface>com.atlassian.launchpad.integration.MyPluginComponent</interface>
+    </component>
+    
+    <!-- import from the product container -->
+    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
+    <issue-tabpanel key="whiteboard-tab-panel" name="Whiteboard Tab Panel" i18n-name-key="whiteboard-tab-panel.name" class="com.atlassian.launchpad.jira.whiteboard.WhiteboardTabPanel">
+      <description key="whiteboard-tab-panel.description">Whiteboard Tab Panel</description>
+      <label key="Whiteboard"/>
+      <order>10</order>
+      <resource type="velocity" name="view" location="templates/tabpanels/whiteboard-tab-panel.vm"/>
+    </issue-tabpanel>
+    <issue-tabpanel key="gerrit-tab-panel" name="Gerrit Tab Panel" i18n-name-key="gerrit-tab-panel.name" class="com.atlassian.launchpad.jira.gerrittabpanel.GerritTabPanel">
+      <description key="gerrit-tab-panel.description">Gerrit Tab Panel</description>
+      <label key="gerrit-tab-panel.label"></label>
+      <order>10</order>
+      <resource type="velocity" name="view" location="templates/tabpanels/gerrit-tab-panel.vm"/>
+    </issue-tabpanel>
+    
 </atlassian-plugin>
