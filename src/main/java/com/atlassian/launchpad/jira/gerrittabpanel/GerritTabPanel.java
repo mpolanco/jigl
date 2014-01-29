@@ -1,7 +1,9 @@
 package com.atlassian.launchpad.jira.gerrittabpanel;
 
 import java.io.BufferedReader;
+
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
@@ -33,7 +35,7 @@ import com.atlassian.jira.util.json.JSONTokener;
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	private final String HOST = "review.openstack.org";
-	private final String USER = "rackjira";
+	private final String USER = System.getenv("GERRIT_USER"); //"rackjira";
 	private final int PORT = 29418;
 	private final String KEY_COMMENTS = "comments";
 	private final String GERRIT_ID_FIELD_NAME = "Gerrit ID";
@@ -44,7 +46,7 @@ public class GerritTabPanel extends AbstractIssueTabPanel implements
 	@Override
 	public List<IssueAction> getActions(Issue issue, User remoteUser) {
 		List<IssueAction> messages = new ArrayList<IssueAction>();
-		
+		System.err.println(USER);
 		//read and validate the Gerrit commit hash
 		CustomField gerritLinkFieldContent = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(GERRIT_ID_FIELD_NAME);
 		if(gerritLinkFieldContent == null)
