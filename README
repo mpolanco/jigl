@@ -24,8 +24,12 @@ The plugin can be installed by uploading the Plugin.jar file (located at this pr
 
 Contributing
 --------------
-To contribute to this plugin the user must have installed and configured the Atlassian SDK. Further information is available here:
+To develop for Atlassian Jira plugins the user must have installed and configured the Atlassian SDK. Further information is available here:
 [Atlassian Setup Guide](https://developer.atlassian.com/display/DOCS/Set+up+the+Atlassian+Plugin+SDK+and+Build+a+Project)
+If the aforementioned is complete, the user can contribute to this project by cloning the root directory and using standard Atlassian commands.
+The following topics are consideration for future iterations:
+- Updating a custom field and issue status based on the Gerrit Status retrieved from the Gerrit tab
+- Smoother transition between tabs (like when one clicks on the Comments tab)
 
 Testing
 --------------
