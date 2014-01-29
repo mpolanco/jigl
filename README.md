@@ -38,7 +38,7 @@ To develop for Atlassian Jira plugins the user must have installed and configure
 [Atlassian Setup Guide](https://developer.atlassian.com/display/DOCS/Set+up+the+Atlassian+Plugin+SDK+and+Build+a+Project)
 
 If the aforementioned is complete, the user can contribute to this project by cloning the root directory and using standard Atlassian commands.
-The following topics are consideration for future iterations:
+The following topics are in consideration for future iterations:
 - Updating a custom field and issue status based on the Gerrit Status retrieved from the Gerrit tab
 - Smoother transition between tabs (like when one clicks on the Comments tab)
 
@@ -49,3 +49,4 @@ Basic tests have been added for the Whiteboard tab. Future tests include:
 - General Gerrit Tab Tests
 - Gerrit Tab Content Tests
 
+To run the test suite the user must have the Atlassian SDK installed so that they can then run `atlas-unit-test` in the root of this project.
