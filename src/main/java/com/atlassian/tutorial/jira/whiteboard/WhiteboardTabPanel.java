@@ -50,7 +50,7 @@ public class WhiteboardTabPanel extends AbstractIssueTabPanel implements
 		
 		if(bpLinkField == null)
 		{
-			messages.add(new GenericMessageAction("\"Git Commit ID\" custom field not available. Cannot process Gerrit Review comments"));
+			messages.add(new GenericMessageAction("\"" + LAUNCHPAD_URL_FIELD_NAME + "\" custom field not available. Cannot process Gerrit Review comments"));
 			return messages;
 		}
 		
