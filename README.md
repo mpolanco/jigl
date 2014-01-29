@@ -10,6 +10,7 @@ Gerrit - displays the comments posted on a Gerrit review for a given commit id
 Pre-Requesites
 --------------
 In order for this plugin to fully work, the user must have/complete the following:
+
 1. an Openstack account configured with the user's public ssh key (this is to access comments for the Gerrit review tab as currently the only available means of accessing these is via an SSH API). 
 
 2. The following Custom Fields must be added to the Jira environment under Issue workflow screens:
