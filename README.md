@@ -16,6 +16,7 @@ In order for this plugin to fully work, the user must have/complete the followin
 2. The following Custom Fields must be added to the Jira environment under Issue workflow screens:
 	- Gerrit ID
 	- Launchpad Blueprint URL
+	
 	To have these fields added, please contact your Jira Administrator.
 
 3. The following environment variable must be added to the environment such that it is accessible to the running Jira instance:
