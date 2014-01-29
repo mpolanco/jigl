@@ -32,7 +32,7 @@ import com.atlassian.launchpad.jira.whiteboard.WhiteboardTabPanel;
 @RunWith(MockitoJUnitRunner.class)
 public class WhiteboardTabPanelTest extends TestCase {
 
-	/*@Mock
+	@Mock
 	private Issue mockIssue = new MockIssue();
 	@Mock
 	private User mockUser = new MockUser("Test");
@@ -59,7 +59,7 @@ public class WhiteboardTabPanelTest extends TestCase {
 	@After
 	public void tearDown() throws Exception {
 
-	}*/
+	}
 
 	@Test(expected=Exception.class)
     public void testSomething() throws Exception {
