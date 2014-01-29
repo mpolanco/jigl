@@ -11,12 +11,12 @@ Pre-Requesites
 --------------
 In order for this plugin to fully work, the user must have/complete the following:
 
-1. an Openstack account configured with the user's public ssh key (this is to access comments for the Gerrit review tab as currently the only available means of accessing these is via an SSH API). 
+1. An Openstack account configured with the user's public ssh key (this is to access comments for the Gerrit review tab as currently the only available means of accessing these is via an SSH API). 
 
 2. The following Custom Fields must be added to the Jira environment under Issue workflow screens:
 	- Gerrit ID
 	- Launchpad Blueprint URL
-To have these fields added, please contact your Jira Administrator.
+	To have these fields added, please contact your Jira Administrator.
 
 3. The following environment variable must be added to the environment such that it is accessible to the running Jira instance:
 (`GERRIT_USER = username`)
