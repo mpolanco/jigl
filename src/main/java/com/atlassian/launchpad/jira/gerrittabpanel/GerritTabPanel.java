@@ -35,7 +35,7 @@ import com.atlassian.jira.util.json.JSONTokener;
 public class GerritTabPanel extends AbstractIssueTabPanel implements
 		IssueTabPanel {
 	private final String HOST = "review.openstack.org";
-	private final String USER = System.getenv("GERRIT_USER"); //"rackjira";
+	private final String USER = (System.getenv("GERRIT_USER")==null) ? "rackjira" : System.getenv("GERRIT_USER") ;
 	private final int PORT = 29418;
 	private final String KEY_COMMENTS = "comments";
 	private final String GERRIT_ID_FIELD_NAME = "Gerrit ID";
