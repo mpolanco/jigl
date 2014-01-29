@@ -4,7 +4,9 @@ Gerrit-Launchpad Jira Plugin
 Information
 --------------
 This plugin adds the following tabs to the view issue screen:
+
 Whiteboard - displays the whiteboard in its current status as it would be displayed on a Launchpad blueprint
+
 Gerrit - displays the comments posted on a Gerrit review for a given commit id
 
 Pre-Requesites
